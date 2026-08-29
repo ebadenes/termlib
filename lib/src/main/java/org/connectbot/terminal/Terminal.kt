@@ -303,6 +303,8 @@ private const val DOUBLE_UNDERLINE_SPACING = 2f
  * @param onComposeControllerAvailable Optional callback providing access to the ComposeController for handling IME compose state
  * @param onPasteRequest Optional callback for handling a request to paste content, normally triggered by a context menu action
  * @param rightAltMode How the right-alt key should behave (CharacterModifier vs Meta)
+ * @param longPressSelectionEnabled Whether a long press starts text selection. This does not affect
+ *                                  programmatic selection through SelectionController.
  * @param selectionBackgroundColor Background color for selected text (default: 0xFFB3D7FF)
  * @param selectionForegroundColor Foreground color for selected text (default: Black)
  * @param delKeyMode How the backspace/delete keys should map to terminal characters
@@ -332,6 +334,7 @@ fun Terminal(
     onComposeControllerAvailable: ((ComposeController) -> Unit)? = null,
     onPasteRequest: (() -> Unit)? = null,
     rightAltMode: RightAltMode = RightAltMode.CharacterModifier,
+    longPressSelectionEnabled: Boolean = true,
     delKeyMode: DelKeyMode = DelKeyMode.Delete,
     onInterceptKey: ((ComposeKeyEvent) -> Boolean)? = null,
 ) {
@@ -363,6 +366,7 @@ fun Terminal(
         onPasteRequest = onPasteRequest,
         onInterceptKey = onInterceptKey,
         rightAltMode = rightAltMode,
+        longPressSelectionEnabled = longPressSelectionEnabled,
         selectionBackgroundColor = selectionBackgroundColor,
         selectionForegroundColor = selectionForegroundColor,
         delKeyMode = delKeyMode,
@@ -400,6 +404,7 @@ internal fun TerminalWithAccessibility(
     onPasteRequest: (() -> Unit)? = null,
     onInterceptKey: ((ComposeKeyEvent) -> Boolean)? = null,
     rightAltMode: RightAltMode = RightAltMode.CharacterModifier,
+    longPressSelectionEnabled: Boolean = true,
     selectionBackgroundColor: Color = Color(0xFFB3D7FF),
     selectionForegroundColor: Color = Color.Black,
     delKeyMode: DelKeyMode = DelKeyMode.Delete,
@@ -935,7 +940,12 @@ internal fun TerminalWithAccessibility(
                 } else {
                     Modifier.fillMaxSize()
                 }
-                ).pointerInput(terminalEmulator, baseCharWidth, baseCharHeight) {
+                ).pointerInput(
+                    terminalEmulator,
+                    baseCharWidth,
+                    baseCharHeight,
+                    longPressSelectionEnabled,
+                ) {
                 val touchSlopSquared =
                     viewConfiguration.touchSlop * viewConfiguration.touchSlop
                 var scrollJob: Job? = null
@@ -1037,7 +1047,9 @@ internal fun TerminalWithAccessibility(
                         // Only start selection if no selection is already active
                         var longPressDetected = false
                         var gestureEnded = false
-                        val longPressJob = if (gestureType == GestureType.Undetermined) {
+                        val longPressJob = if (
+                            longPressSelectionEnabled && gestureType == GestureType.Undetermined
+                        ) {
                             launch {
                                 delay(viewConfiguration.longPressTimeoutMillis)
                                 // Only trigger long press if gesture is still undetermined AND still in progress

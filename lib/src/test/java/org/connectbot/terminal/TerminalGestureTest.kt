@@ -96,6 +96,41 @@ class TerminalGestureTest {
     }
 
     @Test
+    fun testDisabledLongPressSelectionRetainsProgrammaticSelection() {
+        val emulator = TerminalEmulatorFactory.create(initialRows = 24, initialCols = 80)
+        var selectionController: SelectionController? = null
+
+        composeTestRule.setContent {
+            Terminal(
+                terminalEmulator = emulator,
+                longPressSelectionEnabled = false,
+                onSelectionControllerAvailable = { selectionController = it },
+            )
+        }
+
+        composeTestRule.waitUntil { selectionController != null }
+
+        composeTestRule.onRoot().performTouchInput {
+            longClick()
+        }
+
+        composeTestRule.waitForIdle()
+        assertFalse(
+            "Selection should not be active after a disabled long click",
+            selectionController?.isSelectionActive == true,
+        )
+
+        composeTestRule.runOnIdle {
+            selectionController!!.startSelection()
+        }
+
+        assertTrue(
+            "Programmatic selection should remain available when long press is disabled",
+            selectionController?.isSelectionActive == true,
+        )
+    }
+
+    @Test
     fun testSwipeTriggersScroll() {
         val emulator = TerminalEmulatorFactory.create(initialRows = 24, initialCols = 80)
         // Add some content to enable scrolling
