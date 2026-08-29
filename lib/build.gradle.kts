@@ -228,7 +228,7 @@ val gitHubUrl = if (gitHubPackagesPublication) {
 }
 val gitHubPackagesGroupId = "io.github.ebadenes.termlib"
 val gitHubPackagesArtifactId = "termlib"
-val gitHubPackagesVersion = "0.1.1-long-press.1"
+val gitHubPackagesVersion = "0.1.1-long-press.2"
 
 metalava {
     additionalSourceSets.from(file("src/main/java"))
@@ -256,7 +256,9 @@ dokka {
 
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true, validateDeployment = DeploymentValidation.PUBLISHED)
-    signAllPublications()
+    if (!gitHubPackagesPublication) {
+        signAllPublications()
+    }
 
     if (gitHubPackagesPublication) {
         coordinates(
