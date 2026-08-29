@@ -1,0 +1,44 @@
+name: Publish long-press release to GitHub Packages
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    if: github.event.release.tag_name == 'v0.1.1-long-press.1'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+
+      - name: Validate release tag
+        run: test "$(git describe --exact-match --tags HEAD)" = "${{ github.event.release.tag_name }}"
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: '13114758'
+          packages: 'cmdline-tools;latest tools platform-tools'
+
+      - name: Publish fixed Maven artifact
+        run: ./gradlew :lib:publishMavenPublicationToGitHubPackagesRepository -PgithubPackagesPublication --no-configuration-cache
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

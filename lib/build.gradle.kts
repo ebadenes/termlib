@@ -220,7 +220,15 @@ roborazzi {
     outputDir.set(file("src/test/roborazzi"))
 }
 
-val gitHubUrl = "https://github.com/connectbot/termlib"
+val gitHubPackagesPublication = providers.gradleProperty("githubPackagesPublication").isPresent
+val gitHubUrl = if (gitHubPackagesPublication) {
+    "https://github.com/ebadenes/termlib"
+} else {
+    "https://github.com/connectbot/termlib"
+}
+val gitHubPackagesGroupId = "io.github.ebadenes.termlib"
+val gitHubPackagesArtifactId = "termlib"
+val gitHubPackagesVersion = "0.1.1-long-press.1"
 
 metalava {
     additionalSourceSets.from(file("src/main/java"))
@@ -250,7 +258,15 @@ mavenPublishing {
     publishToMavenCentral(automaticRelease = true, validateDeployment = DeploymentValidation.PUBLISHED)
     signAllPublications()
 
-    coordinates(groupId = "org.connectbot", artifactId = "termlib")
+    if (gitHubPackagesPublication) {
+        coordinates(
+            groupId = gitHubPackagesGroupId,
+            artifactId = gitHubPackagesArtifactId,
+            version = gitHubPackagesVersion,
+        )
+    } else {
+        coordinates(groupId = "org.connectbot", artifactId = "termlib")
+    }
 
     pom {
         name.set("termlib")
@@ -275,6 +291,21 @@ mavenPublishing {
             connection.set("scm:git:$gitHubUrl.git")
             developerConnection.set("$gitHubUrl.git")
             url.set(gitHubUrl)
+        }
+    }
+}
+
+if (gitHubPackagesPublication) {
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/ebadenes/termlib")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
         }
     }
 }
