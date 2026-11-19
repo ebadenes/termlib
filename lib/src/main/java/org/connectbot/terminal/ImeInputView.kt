@@ -65,6 +65,23 @@ internal class ImeInputView(
         }
 
     /**
+     * Input type requested from the IME for plain terminal input.
+     *
+     * The default keeps suggestions and auto-correction off, which most IMEs
+     * serve with a password-style layout. Hosts that want a more compact (or
+     * a more normal) keyboard can pass a different value; [onRestartInput] is
+     * called so the IME picks the change up immediately.
+     */
+    var terminalInputType: Int = DEFAULT_TERMINAL_INPUT_TYPE
+        set(value) {
+            if (field == value) return
+            field = value
+            if (windowToken != null) {
+                onRestartInput(this)
+            }
+        }
+
+    /**
      * Show the IME forcefully. This is more reliable than SoftwareKeyboardController.
      */
     @Suppress("DEPRECATION")
@@ -110,10 +127,7 @@ internal class ImeInputView(
             // - TYPE_TEXT_VARIATION_VISIBLE_PASSWORD: Keeps text visible (we handle display ourselves)
             // - TYPE_TEXT_FLAG_NO_SUGGESTIONS: Disables autocomplete/suggestions
             // - TYPE_NULL: No special input processing
-            outAttrs.inputType = EditorInfo.TYPE_NULL or
-                EditorInfo.TYPE_TEXT_VARIATION_PASSWORD or
-                EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or
-                EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            outAttrs.inputType = terminalInputType
         }
 
         return TerminalInputConnection(this, isComposeModeActive).also { activeConnection = it }
@@ -375,5 +389,15 @@ internal class ImeInputView(
     companion object {
         /** Upper bound on [InputConnection.deleteSurroundingText]'s `leftLength`. */
         private const val MAX_DELETE_SURROUNDING = 4096
+
+        /**
+         * Suggestions and auto-correction off, text visible. This is the
+         * historical terminal input type.
+         */
+        const val DEFAULT_TERMINAL_INPUT_TYPE: Int =
+            EditorInfo.TYPE_NULL or
+                EditorInfo.TYPE_TEXT_VARIATION_PASSWORD or
+                EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or
+                EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS
     }
 }

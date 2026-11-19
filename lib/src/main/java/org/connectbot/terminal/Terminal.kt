@@ -336,6 +336,7 @@ fun Terminal(
     rightAltMode: RightAltMode = RightAltMode.CharacterModifier,
     longPressSelectionEnabled: Boolean = true,
     selectionActionsEnabled: Boolean = true,
+    terminalInputType: Int = ImeInputView.DEFAULT_TERMINAL_INPUT_TYPE,
     delKeyMode: DelKeyMode = DelKeyMode.Delete,
     onInterceptKey: ((ComposeKeyEvent) -> Boolean)? = null,
 ) {
@@ -369,6 +370,7 @@ fun Terminal(
         rightAltMode = rightAltMode,
         longPressSelectionEnabled = longPressSelectionEnabled,
         selectionActionsEnabled = selectionActionsEnabled,
+        terminalInputType = terminalInputType,
         selectionBackgroundColor = selectionBackgroundColor,
         selectionForegroundColor = selectionForegroundColor,
         delKeyMode = delKeyMode,
@@ -408,6 +410,7 @@ internal fun TerminalWithAccessibility(
     rightAltMode: RightAltMode = RightAltMode.CharacterModifier,
     longPressSelectionEnabled: Boolean = true,
     selectionActionsEnabled: Boolean = true,
+    terminalInputType: Int = ImeInputView.DEFAULT_TERMINAL_INPUT_TYPE,
     selectionBackgroundColor: Color = Color(0xFFB3D7FF),
     selectionForegroundColor: Color = Color.Black,
     delKeyMode: DelKeyMode = DelKeyMode.Delete,
@@ -773,6 +776,12 @@ internal fun TerminalWithAccessibility(
     // correct outAttrs (and restartInput is called to apply the change).
     LaunchedEffect(composeMode.isActive, imeInputView) {
         imeInputView?.isComposeModeActive = composeMode.isActive
+    }
+
+    // Same for the input type: changing it restarts the IME so the host can
+    // switch between a compact and a suggestion-enabled keyboard at runtime.
+    LaunchedEffect(terminalInputType, imeInputView) {
+        imeInputView?.terminalInputType = terminalInputType
     }
 
     // Coroutine scope for animations
