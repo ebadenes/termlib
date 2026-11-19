@@ -335,6 +335,7 @@ fun Terminal(
     onPasteRequest: (() -> Unit)? = null,
     rightAltMode: RightAltMode = RightAltMode.CharacterModifier,
     longPressSelectionEnabled: Boolean = true,
+    selectionActionsEnabled: Boolean = true,
     delKeyMode: DelKeyMode = DelKeyMode.Delete,
     onInterceptKey: ((ComposeKeyEvent) -> Boolean)? = null,
 ) {
@@ -367,6 +368,7 @@ fun Terminal(
         onInterceptKey = onInterceptKey,
         rightAltMode = rightAltMode,
         longPressSelectionEnabled = longPressSelectionEnabled,
+        selectionActionsEnabled = selectionActionsEnabled,
         selectionBackgroundColor = selectionBackgroundColor,
         selectionForegroundColor = selectionForegroundColor,
         delKeyMode = delKeyMode,
@@ -405,6 +407,7 @@ internal fun TerminalWithAccessibility(
     onInterceptKey: ((ComposeKeyEvent) -> Boolean)? = null,
     rightAltMode: RightAltMode = RightAltMode.CharacterModifier,
     longPressSelectionEnabled: Boolean = true,
+    selectionActionsEnabled: Boolean = true,
     selectionBackgroundColor: Color = Color(0xFFB3D7FF),
     selectionForegroundColor: Color = Color.Black,
     delKeyMode: DelKeyMode = DelKeyMode.Delete,
@@ -1451,7 +1454,12 @@ internal fun TerminalWithAccessibility(
         }
 
         // Copy button (+ overflow menu) when text is selected
-        if (selectionManager.mode != SelectionMode.NONE && !selectionManager.isSelecting && !isDraggingHandle) {
+        if (
+            selectionActionsEnabled &&
+            selectionManager.mode != SelectionMode.NONE &&
+            !selectionManager.isSelecting &&
+            !isDraggingHandle
+        ) {
             val range = selectionManager.selectionRange
             if (range != null) {
                 val endPosition = range.getEndPosition()

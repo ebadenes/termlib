@@ -228,7 +228,7 @@ val gitHubUrl = if (gitHubPackagesPublication) {
 }
 val gitHubPackagesGroupId = "io.github.ebadenes.termlib"
 val gitHubPackagesArtifactId = "termlib"
-val gitHubPackagesVersion = "0.1.1-long-press.2"
+val gitHubPackagesVersion = "0.1.2"
 
 metalava {
     additionalSourceSets.from(file("src/main/java"))
